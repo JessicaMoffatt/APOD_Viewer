@@ -30,7 +30,7 @@ def ShowDateSelect():
         selection = cal.selection_get()
         if type(selection) == datetime:
             selection = selection.date()
-        if selection <= datetime.now().date():
+        if datetime(1995, 6, 16).date() <= selection <= datetime.now().date():
             global selectedDate        
             selectedDate = "{}".format(selection)
             dateLabel.configure(text="Selected Date: " + selectedDate)
