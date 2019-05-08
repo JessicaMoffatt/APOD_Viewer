@@ -1,25 +1,45 @@
 import tkinter as tk
 from tkinter import ttk
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageOps
 import requests
 from urllib.request import urlopen
 import io
 from tkcalendar import Calendar
 from datetime import datetime
-import logging
 import my_gui
+import logging
 
 HEIGHT = 720
 WIDTH = 720
-BASEWIDTH = 620
 
-EERIE_BLACK="#0B1221"
+GUN_METAL="#292f3c"
+IVORY="#fffdf4"
 
 NASA_KEY = "CHJFAY4XzXIc5LrO0MvAcB12XeHoAzHufVBR4AvV"
 
 selectedDate = "{}".format(datetime.now().date())
 
 logging.basicConfig(level=logging.DEBUG)
+
+def OnConfigure(event):
+
+    w = event.width
+    h = event.height
+
+    if hasattr(label,'image') and label.image != "":
+        global pil_image
+        hsize = CalculateHSize(w, pil_image.size[0], pil_image.size[1])
+        new_image = pil_image.resize((w,hsize), Image.ANTIALIAS)
+        tk_image = ImageTk.PhotoImage(new_image)
+        label.image = ImageTk.PhotoImage(new_image)
+        label.configure(image=tk_image)
+        label.image = tk_image
+
+def CalculateHSize(base, size0, size1):
+
+     ratio = (base/float(size0))
+     hsize = int((float(size1 * float(ratio))))
+     return hsize
 
 def GetDate():
 
@@ -59,11 +79,12 @@ def GetAPOD():
     if mediaType == "image":
         image_bytes = urlopen(apodUrl).read()
         data_stream = io.BytesIO(image_bytes)
-        pil_image = Image.open(data_stream)
-        ratio = (BASEWIDTH/float(pil_image.size[0]))
-        hsize = int((float(pil_image.size[1]) * float(ratio)))
-        pil_image = pil_image.resize((BASEWIDTH,hsize), Image.ANTIALIAS)
-        tk_image = ImageTk.PhotoImage(pil_image)
+        global pil_image
+        pil_image = Image.open(data_stream)        
+        hsize = CalculateHSize(lowerFrame.winfo_width(), pil_image.size[0], pil_image.size[1])
+        new_image = pil_image.resize((lowerFrame.winfo_width(),hsize), Image.ANTIALIAS)
+
+        tk_image = ImageTk.PhotoImage(new_image)
         
         label.configure(image=tk_image)
         label.image = tk_image
@@ -77,12 +98,12 @@ def GetAPOD():
 
 root = tk.Tk()
 root.title("Astronomy Picture of the Day")
-root.configure(bg=EERIE_BLACK)
+root.configure(bg=GUN_METAL)
 
-canvas = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg=EERIE_BLACK, highlightthickness=0)
-canvas.pack()
+canvas = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg=GUN_METAL, highlightthickness=0)
+canvas.pack(fill="both", expand=1)
 
-frame = tk.Frame(root, bg=EERIE_BLACK)
+frame = tk.Frame(root, bg=GUN_METAL)
 frame.place(relx=0.5, rely=0.05, relwidth=0.9, anchor="n")
 
 dateLabel = tk.Label(frame, font=("Book Antiqua",15), text="Selected Date: " + GetDate())
@@ -94,10 +115,11 @@ chooseDate.grid(row=1, column=2)
 submit = tk.Button(frame, text="Get APOD", font=("Book Antiqua",15), command=lambda: GetAPOD())
 submit.grid(row=1, column=3)
 
-lowerFrame = tk.Frame(root, bg=EERIE_BLACK)
+lowerFrame = tk.Frame(root, bg=GUN_METAL)
 lowerFrame.place(relx=0.5, rely=0.16, relwidth=0.9, relheight=0.8, anchor="n")
+lowerFrame.bind("<Configure>", OnConfigure)
 
-label = tk.Label(lowerFrame, text="TEST")
+label = tk.Label(lowerFrame)
 label.pack()
 label.grid()
 label.grid_remove()
