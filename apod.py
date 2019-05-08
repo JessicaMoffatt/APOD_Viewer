@@ -10,7 +10,8 @@ import logging
 import my_gui
 
 HEIGHT = 720
-WIDTH = 980
+WIDTH = 720
+BASEWIDTH = 620
 
 EERIE_BLACK="#0B1221"
 
@@ -59,7 +60,11 @@ def GetAPOD():
         image_bytes = urlopen(apodUrl).read()
         data_stream = io.BytesIO(image_bytes)
         pil_image = Image.open(data_stream)
+        ratio = (BASEWIDTH/float(pil_image.size[0]))
+        hsize = int((float(pil_image.size[1]) * float(ratio)))
+        pil_image = pil_image.resize((BASEWIDTH,hsize), Image.ANTIALIAS)
         tk_image = ImageTk.PhotoImage(pil_image)
+        
         label.configure(image=tk_image)
         label.image = tk_image
         label.grid()
