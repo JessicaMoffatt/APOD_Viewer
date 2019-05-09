@@ -15,9 +15,11 @@ WIDTH = 720
 GUN_METAL="#292f3c"
 IVORY="#fffdf4"
 
+DATE_FORMAT="%b %d, %Y"
+
 NASA_KEY = "CHJFAY4XzXIc5LrO0MvAcB12XeHoAzHufVBR4AvV"
 
-selectedDate = "{}".format(datetime.now().date())
+selectedDate = "{}".format(datetime.now().date().strftime(DATE_FORMAT))
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -34,7 +36,7 @@ def OnConfigure(event):
         label.image = ImageTk.PhotoImage(new_image)
         label.configure(image=tk_image)
         label.image = tk_image
-
+        
 def CalculateHSize(base, size0, size1):
 
      ratio = (base/float(size0))
@@ -53,15 +55,15 @@ def ShowDateSelect():
             selection = selection.date()
         if datetime(1995, 6, 16).date() <= selection <= datetime.now().date():
             global selectedDate        
-            selectedDate = "{}".format(selection)
+            selectedDate = "{}".format(selection.strftime(DATE_FORMAT))
             dateLabel.configure(text="Selected Date: " + selectedDate)
             top.Quit()
         else:
-            cal.selection_set(datetime.strptime(selectedDate, "%Y-%m-%d"))
+            cal.selection_set(datetime.strptime(selectedDate, DATE_FORMAT))
 
     top = my_gui.FloatingWindow(root)
     cal = Calendar(top, font=("Book Antiqua",15), selectmode="day", showothermonthdays=False, showweeknumbers=False)
-    cal.selection_set(datetime.strptime(selectedDate, "%Y-%m-%d"))
+    cal.selection_set(datetime.strptime(selectedDate, DATE_FORMAT))
     cal.pack(fill="both", expand=True)
 
     selectBtn = ttk.Button(top, text="Select", command=SetDate).pack()
@@ -69,7 +71,7 @@ def ShowDateSelect():
 #date is in format YYYY-MM-DD
 def GetAPOD():
 
-    dateF = GetDate()
+    dateF = datetime.strptime(GetDate(), DATE_FORMAT).date()
     url = "https://api.nasa.gov/planetary/apod"
     params = {"api_key":NASA_KEY, "hd":True, "date":dateF}
     response = requests.get(url, params=params)
@@ -106,7 +108,7 @@ canvas.pack(fill="both", expand=1)
 frame = tk.Frame(root, bg=GUN_METAL)
 frame.place(relx=0.5, rely=0.05, relwidth=0.9, anchor="n")
 
-dateLabel = tk.Label(frame, font=("Book Antiqua",15), text="Selected Date: " + GetDate())
+dateLabel = tk.Label(frame, font=("Book Antiqua",15), text="Selected Date: " + GetDate(), bg=GUN_METAL, fg='white')
 dateLabel.grid(row=1, column=1)
 
 chooseDate = tk.Button(frame, text="Choose Date...", font=("Book Antiqua",15), command=lambda: ShowDateSelect())
